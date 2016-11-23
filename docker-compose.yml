@@ -1,0 +1,42 @@
+# PHP
+
+phpfpm-gitscrum:
+  build: .
+  restart: always
+  environment:
+    - DEBUG=1
+  volumes:
+    - ./php-fpm-7/php-fpm.conf:/usr/local/etc/php-fpm.conf
+    - ./php-fpm-7/php.ini:/usr/local/etc/php/php.ini
+    - ./gitscrum:/var/www/html
+    - ./log/php-fpm:/var/log/php-fpm
+  links:
+    - mysql-gitscrum
+
+# NGINX
+nginx-gitscrum:
+  restart: always
+  image: nginx
+  ports:
+    - "80:80"
+  links:
+    - phpfpm-gitscrum
+  volumes:
+    - ./nginx/vhost.conf:/etc/nginx/conf.d/default.conf
+    - ./gitscrum:/var/www/html
+    - ./log/nginx:/var/log/nginx
+
+# MYSQL
+mysql-gitscrum:
+  restart: always
+  image: mysql
+  ports:
+    - "3306:3306"
+  environment:
+    MYSQL_ROOT_PASSWORD: 123456
+    MYSQL_USER: gitscrum
+    MYSQL_PASSWORD: 123456
+    MYSQL_DATABASE: develop
+  volumes:
+    - ./mysql/databases:/var/lib/mysql
+    - ./log/mysql:/var/log/mysql
